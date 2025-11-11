@@ -1342,7 +1342,7 @@ class TherapyApp(tk.Tk):
         dwin.geometry("980x450")
 
         # Combat state
-        player_hp = self.player["stats"]["Composure"]
+        player_hp = self.player["stats"]["Composure"] + 5  # Start with bonus sanity for battles
         client_hp = self.current_client["absurdity"] + self.current_client["resistance"]
         turn_count = 0
         
@@ -1352,20 +1352,20 @@ class TherapyApp(tk.Tk):
         status_frame = tk.Frame(dwin, relief=tk.RAISED, bd=2)
         status_frame.pack(pady=10, padx=10, fill=tk.X)
         
-        # Player health bar with green background
-        player_frame = tk.Frame(status_frame, bg="#90EE90", relief=tk.SUNKEN, bd=2)
+        # Player health bar with solid blue background
+        player_frame = tk.Frame(status_frame, bg="#4A90E2", relief=tk.SUNKEN, bd=2)
         player_frame.pack(side=tk.LEFT, padx=20, pady=5)
-        player_label = tk.Label(player_frame, text="YOUR SANITY", font=("Helvetica", 10, "bold"), bg="#90EE90")
+        player_label = tk.Label(player_frame, text="YOUR SANITY", font=("Helvetica", 10, "bold"), bg="#4A90E2", fg="white")
         player_label.pack()
-        player_status = tk.Label(player_frame, text=f"{player_hp} / 15", font=("Helvetica", 14, "bold"), bg="#90EE90")
+        player_status = tk.Label(player_frame, text=f"{player_hp} / 20", font=("Helvetica", 14, "bold"), bg="#4A90E2", fg="white")
         player_status.pack(pady=5)
         
-        # Client health bar with red background  
-        client_frame = tk.Frame(status_frame, bg="#FFB6C1", relief=tk.SUNKEN, bd=2)
+        # Client health bar with solid red background  
+        client_frame = tk.Frame(status_frame, bg="#E94B3C", relief=tk.SUNKEN, bd=2)
         client_frame.pack(side=tk.RIGHT, padx=20, pady=5)
-        client_label = tk.Label(client_frame, text="CLIENT CHAOS", font=("Helvetica", 10, "bold"), bg="#FFB6C1")
+        client_label = tk.Label(client_frame, text="CLIENT CHAOS", font=("Helvetica", 10, "bold"), bg="#E94B3C", fg="white")
         client_label.pack()
-        client_status = tk.Label(client_frame, text=f"{client_hp}", font=("Helvetica", 14, "bold"), bg="#FFB6C1")
+        client_status = tk.Label(client_frame, text=f"{client_hp}", font=("Helvetica", 14, "bold"), bg="#E94B3C", fg="white")
         client_status.pack(pady=5)
         
         log_frame = tk.Frame(dwin)
@@ -1380,34 +1380,16 @@ class TherapyApp(tk.Tk):
         log_message(f"Combat begins! {self.current_client['name']} is having a psychological breakdown!")
         
         def update_status():
-            player_status.config(text=f"{player_hp} / 15")
+            player_status.config(text=f"{player_hp} / 20")  # Update max to reflect bonus sanity
             client_status.config(text=f"{client_hp}")
-            # Update background colors based on health levels
-            if player_hp <= 3:
-                player_frame.config(bg="#FF6B6B")  # Red when low
-                player_status.config(bg="#FF6B6B")
-                player_label.config(bg="#FF6B6B")
-            elif player_hp <= 7:
-                player_frame.config(bg="#FFD93D")  # Yellow when medium
-                player_status.config(bg="#FFD93D")
-                player_label.config(bg="#FFD93D")
-            else:
-                player_frame.config(bg="#90EE90")  # Green when healthy
-                player_status.config(bg="#90EE90")
-                player_label.config(bg="#90EE90")
+            # Keep solid colors - no more random color changes
+            player_frame.config(bg="#4A90E2")  # Solid blue for player
+            player_status.config(bg="#4A90E2")
+            player_label.config(bg="#4A90E2")
                 
-            if client_hp <= 5:
-                client_frame.config(bg="#90EE90")  # Green when client is calm
-                client_status.config(bg="#90EE90")
-                client_label.config(bg="#90EE90")
-            elif client_hp <= 10:
-                client_frame.config(bg="#FFD93D")  # Yellow when moderately chaotic
-                client_status.config(bg="#FFD93D")
-                client_label.config(bg="#FFD93D")
-            else:
-                client_frame.config(bg="#FF6B6B")  # Red when very chaotic
-                client_status.config(bg="#FF6B6B")
-                client_label.config(bg="#FF6B6B")
+            client_frame.config(bg="#E94B3C")  # Solid red for client
+            client_status.config(bg="#E94B3C")
+            client_label.config(bg="#E94B3C")
             
         def player_action(action_type):
             nonlocal player_hp, client_hp, turn_count
@@ -1432,7 +1414,7 @@ class TherapyApp(tk.Tk):
                 # Defensive action - heal + reduce incoming damage
                 dice_roll = random.randint(1, 4)
                 heal = dice_roll + (self.player["stats"]["Patience"] // 3)
-                player_hp = min(15, player_hp + heal)
+                player_hp = min(20, player_hp + heal)  # Update max to reflect bonus sanity
                 log_message(f"Turn {turn_count}: You endure patiently! Rolled {dice_roll}, restored {heal} sanity!")
                 self.player["flags"]["defended"] = True
                 
@@ -1443,10 +1425,10 @@ class TherapyApp(tk.Tk):
                     item = random.choice(available_items)
                     self.player["inventory"][item] -= 1
                     if item == "Coffee":
-                        player_hp = min(15, player_hp + 3)
+                        player_hp = min(20, player_hp + 3)  # Update max to reflect bonus sanity
                         log_message(f"Turn {turn_count}: You drink coffee! Restored 3 sanity!")
                     elif item == "Energy Drink": 
-                        player_hp = min(15, player_hp + 2)
+                        player_hp = min(20, player_hp + 2)  # Update max to reflect bonus sanity
                         log_message(f"Turn {turn_count}: Energy drink! Restored 2 sanity!")
                 else:
                     log_message(f"Turn {turn_count}: No items available!")
@@ -1455,7 +1437,7 @@ class TherapyApp(tk.Tk):
             if client_hp <= 0:
                 log_message("Victory! The client has achieved emotional stability!")
                 log_message("Client successfully treated through combat therapy!")
-                self.player["stats"]["Empathy"] = min(10, self.player["stats"]["Empathy"] + 1)
+                self.player["stats"]["Empathy"] = min(15, self.player["stats"]["Empathy"] + 1)
                 # Set client absurdity to 0 to mark as completed
                 self.current_client["absurdity"] = 0
                 self.render_stats()
@@ -1463,8 +1445,7 @@ class TherapyApp(tk.Tk):
                 def after_victory():
                     dwin.destroy()
                     self.complete_session()
-                    self.current_client_index += 1
-                    self.load_current_client()
+                    self.advance_client()  # Move to next client, don't end day
                 dwin.after(3000, after_victory)
                 return
                 
@@ -1487,16 +1468,18 @@ class TherapyApp(tk.Tk):
             # Check if player defeated
             if player_hp <= 0:
                 log_message("Defeat! Your sanity has shattered!")
-                log_message("The client remains unstable. Moving to next client...")
-                self.player["stats"]["Composure"] = 0
-                self.player["flags"]["melted_down"] = True
+                log_message("The client remains unstable. Restarting session...")
+                # Restore some composure but don't set to 0
+                self.player["stats"]["Composure"] = max(1, self.player["stats"]["Composure"] - 1)
                 self.render_stats()
-                # Close combat window and return to main game after defeat
+                # Close combat window and restart the same client
                 def after_defeat():
                     dwin.destroy()
-                    self.append_log("Combat defeat! Client session failed.")
-                    self.current_client_index += 1
-                    self.load_current_client()
+                    self.append_log("Combat defeat! Restarting client session...")
+                    # Reset client to starting state
+                    self.current_client["node"] = "start"
+                    self.current_client["absurdity"] = max(1, self.current_client["absurdity"] + 1)  # Make slightly harder
+                    self.load_current_client()  # Restart same client
                 dwin.after(3000, after_defeat)
                 return
         
